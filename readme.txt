@@ -1,0 +1,2 @@
+Cada uno debe tener su propia clave y para no haber tanto enredo luego, les recomiendo que creen en la ruta raiz una carpeta "firebase" y ahi adentro reenombren 
+la clave a "Firebase-admin-key.json". Con eso podrian tener y correr todo sin  problemas
