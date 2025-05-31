@@ -1,31 +1,23 @@
 import { conexion } from "../Database/conexion.js";
 import path from 'path'
+import moment from 'moment-timezone';
 
 export const PostFormulario = async(req, res) => {
     try {
         const id_usuario = req.params.id_usuario
-        const { tipo_operacion, divisa_operada, precio_apertura, precio_cierre, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, notas } = req.body
+        const { tipo_operacion, divisa_operada, precio_apertura, profit, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, notas, timezone } = req.body
 
-        const fecha_post = new Date().toISOString().slice(0, 19).replace('T', ' ')
+        const userTimezone = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const fecha_post = moment().tz(userTimezone).format("YYYY-MM-DD HH:mm:ss");
 
         let imagen = null
         if(req.file){
             imagen = req.file.filename
         }
-
-        let profit = 0;
-        const apertura = parseFloat(precio_apertura);
-        const cierre = parseFloat(precio_cierre);
-
-        if (tipo_operacion === 'buy') {
-            profit = cierre - apertura;
-        } else if (tipo_operacion === 'sell') {
-            profit = apertura - cierre;
-        }
-
+      
         await conexion.query(
-            'insert into formulario (id_usuario, tipo_operacion, divisa_operada, precio_apertura, precio_cierre, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, fecha_post, notas, imagen, profit) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-            [id_usuario, tipo_operacion, divisa_operada, precio_apertura, precio_cierre, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, fecha_post, notas, imagen, profit]
+            'insert into formulario (id_usuario, tipo_operacion, divisa_operada, precio_apertura, profit, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, fecha_post, notas, imagen) values (?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            [id_usuario, tipo_operacion, divisa_operada, precio_apertura, profit, stop_loss, take_profit, hora_apertura, hora_cierre, resultado, fecha_post, notas, imagen]
         );
 
         res.status(200).json({ message: "Formulario enviado exitosamente" });
@@ -34,7 +26,6 @@ export const PostFormulario = async(req, res) => {
         res.status(500).json({ message: "Error en el servidor: " + error });
     }
 }; 
-
 
 export const GetFormulario = async(req, res) => {
     try {
