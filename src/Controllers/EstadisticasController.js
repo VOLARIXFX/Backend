@@ -16,9 +16,9 @@ const calcularFechasPeriodo = (tipo_periodo, fecha_referencia = new Date(), peri
             fecha_inicio.setDate(fecha_inicio.getDate() + diasAjuste);
             fecha_inicio.setHours(0, 0, 0, 0);
             
-            // La fecha fin es 6 días después de la fecha inicio ajustada
+            // La fecha fin es 4 días después de la fecha inicio ajustada (solo hasta el viernes)
             fecha_fin = new Date(fecha_inicio);
-            fecha_fin.setDate(fecha_inicio.getDate() + 6);
+            fecha_fin.setDate(fecha_inicio.getDate() + 4);
             fecha_fin.setHours(23, 59, 59, 999);
 
             // Si se pide el período anterior, ajustamos ambas fechas una semana atrás
@@ -96,22 +96,6 @@ const calcularFechasPeriodo = (tipo_periodo, fecha_referencia = new Date(), peri
     };
 };
 
-const calcularResultadoOperacion = (operacion) => {
-// calcula la ganancia☝️ o perdida de una operacion
-    const { tipo_operacion, precio_apertura, precio_cierre } = operacion;
-    let resultado;
-
-    if (tipo_operacion === 'compra' || tipo_operacion === 'buy') {
-        resultado = precio_cierre - precio_apertura;
-    } else if (tipo_operacion === 'venta' || tipo_operacion === 'sell') {
-        resultado = precio_apertura - precio_cierre;
-    } else {
-        resultado = 0;
-    }
-
-    return resultado;
-};
-
 const calcularEstadisticasPeriodo = async (tipo_periodo, fecha_inicio, fecha_fin) => {
     console.log('Calculando estadísticas para:', { tipo_periodo, fecha_inicio, fecha_fin });
 
@@ -122,15 +106,17 @@ const calcularEstadisticasPeriodo = async (tipo_periodo, fecha_inicio, fecha_fin
         [fecha_inicio, fecha_fin, 2]
     );
 
-    console.log('Operaciones encontradas:', operaciones.length);
+    console.log('Operaciones crudas:', operaciones);
 
     const operaciones_totales = operaciones.length;
     
     // Asegurar que el profit sea un número válido para los cálculos
     const operacionesValidas = operaciones.map(op => ({
         ...op,
-        profit: parseFloat(op.profit) || 0 // Convertir a número, si falla usar 0
+        profit: parseFloat(op.profit) || 0 // <-- ¿op.profit existe realmente?
     }));
+
+    console.log('Operaciones válidas:', operacionesValidas);
 
     // Contar operaciones ganadoras y perdedoras basado en el campo 'profit' válido
     const operaciones_ganadoras = operacionesValidas.filter(op => op.profit > 0).length;
@@ -407,5 +393,4 @@ export const obtenerEstadisticas = async (req, res) => {
     }
 };
 
-// Actualizar estadísticas cada 12 horas (43200000 ms)
 setInterval(generarEstadisticasActuales, 43200000); 
